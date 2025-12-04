@@ -1,24 +1,41 @@
-#Kenéz Máté B6ONGN 2025.11.30.
+# Kenéz Máté B6ONGN 2025.11.30.
 
 import pyconio
 from matrix import *
 from algoritmusok import *
 from muveletek import *
 
+def keret(szoveg):
+    pyconio.textcolor(pyconio.LIGHTGREEN)
+    vonal = "╔" + "═" * 78 + "╗\n"
+    also = "╚" + "═" * 78 + "╝\n"
+
+    ki = vonal
+    for sor in szoveg.split("\n"):
+        s = sor[:78]  # truncate safety
+        ki += "║" + s.ljust(78) + "║\n"
+    ki += also
+    return ki
+
 def fomenu():
     while True:
         pyconio.clrscr()
-        print('''----------MÁTRIX FŐMENÜ----------
+
+        print(keret(
+"""                              MÁTRIX FŐMENÜ
+
 Válassz a menüpontok közül:
 
-1. Új Mátrix létrehozása
+1. Új mátrix létrehozása
 2. Mátrixok kezelése
 3. Műveletek
 4. Algoritmusok
-0. Kilépés
----------------------------------''')
+
+0. Kilépés"""
+        ))
+
         try:
-            valasz = int(input("Válassztás: "))
+            valasz = int(input("Választás: "))
             if valasz < 0 or valasz > 4:
                 print("Hiba!: A választás 0 és 4 között kell, hogy legyen.")
                 continue
@@ -34,19 +51,25 @@ Válassz a menüpontok közül:
                 kilepes()
                 break
         except ValueError:
-            print("Hiba!: A bemenetnek számnak kell lennie. (0-4)")
+            print("Hiba!: Számot adj meg (0–4).")
             continue
 
 def menu1():
-    """Új mátrix létrehozása"""
     pyconio.clrscr()
-    print('''\n---------- MÁTRIX LÉTREHOZÁSA ----------
+    while True:
+
+        print(keret(
+"""                           ÚJ MÁTRIX LÉTREHOZÁSA
+
+Válassz az alábbi lehetőségek közül:
+
 1. Egységmátrix létrehozása
 2. Mátrix megadása kézzel
----------------------------------
-.. Vissza | 0. Kilépés
-''')
-    while True:    
+
+.. Vissza
+0. Kilépés"""
+        ))
+
         valasz = input("Választás: ").strip().lower()
         if valasz == "..":
             return
@@ -58,108 +81,117 @@ def menu1():
         elif valasz == "2":
             letrehoz_kezi()
         else:
-            print("Hibás választás! (0-2 vagy ..) ")
+            print("Hibás választás! (0–2 vagy ..)")
 
 def menu2():
-    '''Itt tudod modosítani, törölni a korábbi mátrixokat.'''
-    pyconio.clrscr()
-    while True: 
-        print('''\n---------- MÁTRIXOK KEZELÉSE----------
+    while True:
+        pyconio.clrscr()
+
+        print(keret(
+"""                              MÁTRIXOK KEZELÉSE
+
 Add meg a mátrix nevét, amit kezelni szeretnél!
----------------------------------
-.. Vissza | 0. Kilépés
-''')   
+
+.. Vissza
+0. Kilépés"""
+        ))
+
         valasz = input("Választás: ").strip().upper()
         if valasz == "..":
             return
         elif valasz == "0":
             kilepes()
             exit()
-        else:
-            fajlnev = valasz + ".csv"
-            try:
-                matrix = fajlbol_olvas(fajlnev)
-            except FileNotFoundError:
-                print(f"Nincs ilyen mátrix: {fajlnev}")
-                continue
 
+        fajlnev = valasz + ".csv"
+
+        try:
+            matrix = fajlbol_olvas(fajlnev)
+        except FileNotFoundError:
+            print(f"Nincs ilyen mátrix: {fajlnev}")
+            continue
+
+        # második menü
         while True:
             pyconio.clrscr()
-            print(f"MÁTRIX: {valasz}\n")
-            print(matrix)
-            print('''
------------------------------
-1. Módosítás
+
+            fejl = f"KIVÁLASZTOTT MÁTRIX: {valasz}\n\n{matrix}\n\n"
+            print(keret(
+fejl +
+"""1. Módosítás
 2. Törlés
-.. Vissza | 0. Kilépés
-''')
+
+.. Vissza
+0. Kilépés"""
+            ))
 
             muvelet = input("Választás: ").strip()
 
             if muvelet == "..":
                 return
-            
-            elif valasz == "0":
+            elif muvelet == "0":
                 kilepes()
                 exit()
 
             elif muvelet == "1":
                 modosit_matrix(matrix, fajlnev)
-                return   # vissza a MENU2 felső szintjére
+                return
 
             elif muvelet == "2":
                 torol_matrix(fajlnev)
                 print("Mátrix törölve.")
-                return   # vissza a MENU2-be
+                return
 
             else:
                 print("Érvénytelen választás.")
-                # azonnal visszamegy a ciklus elejére
-                continue    
+
 
 def menu3():
-    '''Itt kiválaszthatsz egy mátrixot,
-    aztán ki kell választanod mit akarsz vele csinálni.
-    
-    Ha transzponálni, akkor kiírja az eredményt,
-    ha olyan műveletet, amit több mátrixszal kell
-    (Mátrix szorzást, összeadás, kivonás), akkor kéri,
-    hogy válassz még egy mátrixot. A Skalárral való szorzás
-    esetén egy float számot fog elfogadni.
-    
-    Ezután kiírja az eredményt, ekkor új műveletet kezdhetsz
-    a már új mátrixon. Illetve lementheted az eredményt'''
     pyconio.clrscr()
-    print("\n------ MŰVELETEK ------\n")
-
     # 1) Első mátrix kiválasztása
+
     while True:
-        nev1 = input("Add meg a mátrix nevét: ").strip().upper()
+        print(keret(
+"""                                 MŰVELETEK
+
+Add meg a mátrix nevét, amin műveleteket szeretnél végezni.
+
+.. Vissza
+0. Kilépés"""
+        ))
+
+        nev1 = input("Melyik mátrix? ").strip().upper()
         if nev1 == "..":
             return
+        if nev1 == "0":
+            kilepes()
+            exit()
+
         fajl1 = nev1 + ".csv"
+
         try:
             A = fajlbol_olvas(fajl1)
             break
         except FileNotFoundError:
             print("Nincs ilyen mátrix.")
+            continue
 
-    # 2) Művelet választása
+    # 2) művelet választás
     while True:
         pyconio.clrscr()
-        print(f"MÁTRIX: {nev1}\n")
-        print(A)
-        print('''
------------------------------
-Válassz műveletet:
+        fejlec = f"MÁTRIX: {nev1}\n\n{A}\n\n"
 
-1. Transzponálás
+        print(keret(
+fejlec +
+"""1. Transzponálás
 2. Skalárral szorzás
 3. Mátrix + Mátrix
 4. Mátrix - Mátrix
 5. Mátrix * Mátrix
-.. Vissza | 0. Kilépés
-''')
+
+.. Vissza
+0. Kilépés"""
+        ))
 
         valasz = input("Választás: ").strip()
 
@@ -169,22 +201,23 @@ Válassz műveletet:
             kilepes()
             exit()
 
-        # Egymátrixos műveletek 
+        # egymátrixos műveletek
         elif valasz == "1":
             eredmeny = transzponal(A)
 
         elif valasz == "2":
             try:
                 k = float(input("Skalár: "))
-                eredmeny = skalarral_szoroz(A, k)
             except ValueError:
-                print("Hibás szám.")
+                print("Nem szám.")
                 continue
+            eredmeny = skalarral_szoroz(A, k)
 
-        # Kétmátrixos műveletek
+        # többmátrixos
         elif valasz in ("3", "4", "5"):
             nev2 = input("Második mátrix neve: ").strip().upper()
             fajl2 = nev2 + ".csv"
+
             try:
                 B = fajlbol_olvas(fajl2)
             except FileNotFoundError:
@@ -195,41 +228,44 @@ Válassz műveletet:
                 eredmeny = osszead(A, B)
             elif valasz == "4":
                 eredmeny = kivon(A, B)
-            elif valasz == "5":
+            else:
                 eredmeny = szorzas(A, B)
 
         else:
             print("Érvénytelen választás.")
             continue
 
-        # 3) Eredmény kiírása
+        # eredmény kiírás
         pyconio.clrscr()
-        print("EREDMÉNY:\n")
-        print(eredmeny)
+        print(keret("EREDMÉNY:\n\n" + str(eredmeny)))
 
-        # 4) Mentés opcionálisan
-        ment = input("\nMentsem? (i/n): ").strip().lower()
+        ment = input("Mentsem? (i/n): ").strip().lower()
         if ment == "i":
-            ujnev = input("Új mátrix neve: ").strip().upper()
+            ujnev = input("Új név: ").strip().upper()
             fajl = "matrixok/" + ujnev + ".csv"
             eredmeny.fajlba_ir(fajl)
             print("Mentve.")
 
-        input("\nTovább (enter)...")
-
+        input("Enter a folytatáshoz...")
 
 def menu4():
-    '''Itt először ki kell választanod a mátrixot.
-    Aztán az algoritmust. Kiírja az eredményt, az eredményt
-    elmentheted új mátrixként.'''
     pyconio.clrscr()
-    print("\n------ ALGORITMUSOK ------\n")
 
+    # mátrix kiválasztása
     while True:
-        nev = input("Add meg a mátrix nevét: ").strip().upper()
+        print(keret(
+"""                                 ALGORITMUSOK
+
+Add meg a mátrix nevét:
+
+.. Vissza
+0. Kilépés"""
+        ))
+
+        nev = input("Melyik mátrix? ").strip().upper()
         if nev == "..":
             return
-        elif nev == "0":
+        if nev == "0":
             kilepes()
             exit()
 
@@ -239,153 +275,143 @@ def menu4():
             A = fajlbol_olvas(fajl)
             break
         except FileNotFoundError:
-            print("Nincs ilyen mátrix (A).")
+            print("Nincs ilyen mátrix.")
             continue
 
+    # algoritmus menü
     while True:
         pyconio.clrscr()
-        print(f"MÁTRIX A: {nev}\n")
-        print(A)
-        print('''
------------------------------
-Válassz algoritmust:
+        fejlec = f"MÁTRIX A: {nev}\n\n{A}\n\n"
 
-1. Determináns
+        print(keret(
+fejlec +
+"""1. Determináns
 2. Rang
 3. Gauss-elimináció
 4. Inverz
-5. Egyenletrendszer megoldása (Ax = b)
+5. Egyenletrendszer – Ax=b
 
-.. Vissza | 0. Kilépés
-''')
+.. Vissza
+0. Kilépés"""
+        ))
 
         valasz = input("Választás: ").strip()
 
         if valasz == "..":
             return
-        elif valasz == "0":
+        if valasz == "0":
             kilepes()
             exit()
 
-        elif valasz == "1":
+        # determináns
+        if valasz == "1":
             try:
-                eredmeny = determinans(A)
+                eredm = determinans(A)
             except Exception as e:
                 print(f"Hiba: {e}")
                 input("Enter...")
                 continue
 
             pyconio.clrscr()
-            print("DETERMINÁNS:\n")
-            print(eredmeny)
-            input("\nTovább (enter)...")
+            print(keret("DETERMINÁNS:\n\n" + str(eredm)))
+            input("Enter...")
             continue
 
-        elif valasz == "2":
+        # rang
+        if valasz == "2":
             try:
-                eredmeny = rang(A)
+                eredm = rang(A)
             except Exception as e:
                 print(f"Hiba: {e}")
                 input("Enter...")
                 continue
 
             pyconio.clrscr()
-            print("RANG:\n")
-            print(eredmeny)
-            input("\nTovább (enter)...")
+            print(keret("RANG:\n\n" + str(eredm)))
+            input("Enter...")
             continue
 
-        elif valasz == "3":
+        # Gauss
+        if valasz == "3":
             try:
-                eredmeny = gauss(A)
+                eredm = gauss(A)
             except Exception as e:
                 print(f"Hiba: {e}")
                 input("Enter...")
                 continue
 
             pyconio.clrscr()
-            print("GAUSS-ELIMINÁCIÓ EREDMÉNY:\n")
-            print(eredmeny)
+            print(keret("GAUSS-ELIMINÁCIÓ:\n\n" + str(eredm)))
 
-            ment = input("\nMentsem mátrixként? (i/n): ").strip().lower()
+            ment = input("Mentsem? (i/n): ").strip().lower()
             if ment == "i":
-                ujnev = input("Új név: ").strip().upper()
-                fajl = "matrixok/" + ujnev + ".csv"
-                eredmeny.fajlba_ir(fajl)
-                print("Mentve.")
+                uj = input("Új név: ").strip().upper()
+                eredm.fajlba_ir("matrixok/" + uj + ".csv")
 
-            input("\nTovább (enter)...")
+            input("Enter...")
             continue
 
-        elif valasz == "4":
+        # inverz
+        if valasz == "4":
             try:
-                eredmeny = inverz(A)
+                eredm = inverz(A)
             except Exception as e:
                 print(f"Hiba: {e}")
                 input("Enter...")
                 continue
 
             pyconio.clrscr()
-            print("INVERZ:\n")
-            print(eredmeny)
+            print(keret("INVERZ:\n\n" + str(eredm)))
 
-            ment = input("\nMentsem mátrixként? (i/n): ").strip().lower()
+            ment = input("Mentsem? (i/n): ").strip().lower()
             if ment == "i":
-                ujnev = input("Új név: ").strip().upper()
-                fajl = "matrixok/" + ujnev + ".csv"
-                eredmeny.fajlba_ir(fajl)
-                print("Mentve.")
+                uj = input("Új név: ").strip().upper()
+                eredm.fajlba_ir("matrixok/" + uj + ".csv")
 
-            input("\nTovább (enter)...")
+            input("Enter...")
             continue
 
-        elif valasz == "5":
-            print("\nEgyenletrendszer – Ax = b")
-
+        # egyenletrendszer
+        if valasz == "5":
+            print("Add meg b mátrix nevét (Ax=b):")
             while True:
-                nevb = input("Add meg a megoldás mátrix nevét: ").strip().upper()
+                nevb = input("> ").strip().upper()
                 if nevb == "..":
                     break
-                elif nevb == "0":
+                if nevb == "0":
                     kilepes()
                     exit()
 
-                fajl_b = nevb + ".csv"
                 try:
-                    b = fajlbol_olvas(fajl_b)
+                    b = fajlbol_olvas(nevb + ".csv")
                     break
                 except FileNotFoundError:
-                    print("Nincs ilyen mátrix (b).")
+                    print("Nincs ilyen mátrix.")
 
             if nevb == "..":
                 continue
 
             try:
-                eredmeny = egyenletrendszer(A, b)
+                eredm = egyenletrendszer(A, b)
             except Exception as e:
                 print(f"Hiba: {e}")
                 input("Enter...")
                 continue
 
             pyconio.clrscr()
-            print("MEGOLDÁS x:\n")
-            print(eredmeny)
+            print(keret("MEGOLDÁS x:\n\n" + str(eredm)))
 
-            ment = input("\nMentsem mátrixként? (i/n): ").strip().lower()
+            ment = input("Mentsem? (i/n): ").strip().lower()
             if ment == "i":
-                ujnev = input("Új név: ").strip().upper()
-                fajl = "matrixok/" + ujnev + ".csv"
-                eredmeny.fajlba_ir(fajl)
-                print("Mentve.")
+                uj = input("Új név: ").strip().upper()
+                eredm.fajlba_ir("matrixok/" + uj + ".csv")
 
-            input("\nTovább (enter)...")
+            input("Enter...")
             continue
 
-        else:
-            print("Érvénytelen választás.")
-            input("Enter...")
+        print("Érvénytelen választás.")
+        input("Enter...")
 
-    
 def kilepes():
     pass
 
