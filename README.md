@@ -20,7 +20,7 @@ Navigate to the repository and type:
 ```bash
 python menu.py
 ```
-###or
+## or
 ```bash
 python3 menu.py
 ```
